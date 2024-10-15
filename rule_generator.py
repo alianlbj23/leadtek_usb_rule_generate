@@ -28,7 +28,7 @@ def get_kernel_info(serial_port):
 def generate_udev_rule(custom_id, kernel_info, serial_port):
     rule_file = f"/etc/udev/rules.d/99-{custom_id}.rules"
     try:
-        with open(rule_file, 'a') as f:
+        with open(rule_file, 'w') as f:
             # 根據 CUSTOM_ID 和 kernel_info 生成 udev 規則
             for kernel in kernel_info:
                 kernel_number = kernel.split('==')[1].strip('"')
