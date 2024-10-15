@@ -30,11 +30,13 @@ for DEVICE in /dev/ttyACM* /dev/ttyUSB*; do
             continue
         fi
 
-        sleep 2
-
-        echo "Checking device: $DEVICE"
-
-        CUSTOM_ID=$(stty -F "$DEVICE" $BAUD_RATE; echo -n "I" > "$DEVICE"; cat < "$DEVICE" | head -n 1)
+        CUSTOM_ID=$(stty -F "$DEVICE" $BAUD_RATE;cat < "$DEVICE" | head -n 1)
+        # json_command=
+        # 發送 JSON 格式的命令
+        # echo $json_command > "$DEVICE"
+        # 讀取回應並解析 JSON
+        # CUSTOM_ID=$(timeout 1s cat < "$DEVICE" | head -n 1)
+        echo "Received CUSTOM_ID: $CUSTOM_ID from $DEVICE"
 
         if [[ -n "$CUSTOM_ID" ]]; then
             echo "Received CUSTOM_ID: $CUSTOM_ID from $DEVICE"
