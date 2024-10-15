@@ -5,8 +5,31 @@ BAUD_RATE=115200
 
 sudo rm -f "$RULE_FILE"
 
+check_robot_arm_link() {
+    if [ -e "/dev/usb_robot_arm" ]; then
+        echo "Robot arm is already correctly linked. Skipping rule creation for robot arm."
+        ROBOT_ARM_PORT=$(readlink -f /dev/usb_robot_arm)
+        echo "Robot arm is linked to $ROBOT_ARM_PORT"
+        return 0
+    fi
+    return 1
+}
+
+if check_robot_arm_link; then
+    robot_arm_linked=true
+    ROBOT_ARM_PORT=$(readlink -f /dev/usb_robot_arm)
+else
+    robot_arm_linked=false
+    ROBOT_ARM_PORT=""
+fi
+
 for DEVICE in /dev/ttyACM* /dev/ttyUSB*; do
     if [[ -e "$DEVICE" ]]; then
+        if $robot_arm_linked && [[ "$DEVICE" == "$ROBOT_ARM_PORT" ]]; then
+            echo "Skipping $DEVICE as it's already linked to robot arm"
+            continue
+        fi
+
         sleep 2
 
         echo "Checking device: $DEVICE"
@@ -17,6 +40,10 @@ for DEVICE in /dev/ttyACM* /dev/ttyUSB*; do
             echo "Received CUSTOM_ID: $CUSTOM_ID from $DEVICE"
 
             if [[ "$CUSTOM_ID" == "ARM001" ]]; then
+                if $robot_arm_linked; then
+                    echo "Robot arm already linked. Skipping."
+                    continue
+                fi
                 DEVICE_TYPE="usb_robot_arm"
             elif [[ "$CUSTOM_ID" == "MOTOR001" ]]; then
                 DEVICE_TYPE="usb_rear_wheel"
